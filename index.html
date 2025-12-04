@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NIRD Terminal - Secure Resistance Shell</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="window">
+            <div class="window-header">
+                <div class="window-buttons">
+                    </div>
+                <div class="window-title">nird@SECURE-PROTOCOL: ~</div>
+            </div>
+
+            <div class="terminal-body" id="terminal-output">
+                <div class="output-line ascii-art">
+███╗   ██╗██╗██████╗ ██████╗ 
+████╗  ██║██║██╔══██╗██╔══██╗
+██╔██╗ ██║██║██████╔╝██║  ██║
+██║╚██╗██║██║██╔══██╗██║  ██║
+██║ ╚████║██║██║  ██║██████╔╝
+╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝╚═════╝ 
+                </div>
+                <div class="output-line success">
+╔════════════════════════════════════════════════════════╗
+║  ACCÈS NIRD SHELL V6.0 - PROTOCOLE DE RÉSISTANCE SECURE ║
+║  Transmettez le Manifeste : Numérique Inclusif, Resp., Durable         ║
+╚════════════════════════════════════════════════════════╝
+                </div>
+                <div class="output-line info">
+Tapez 'help' pour visualiser les PROTOCOLES DE MISSION disponibles.
+</div>
+            </div>
+
+            <div class="input-line">
+                <span class="input-prompt">nird@digital-detox:~$</span>
+                <input type="text" id="terminal-input" autofocus autocomplete="off">
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

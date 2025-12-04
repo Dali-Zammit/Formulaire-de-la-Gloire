@@ -1,0 +1,238 @@
+/* ═══════════════════════════════════════════════════════════════
+   NIRD OS v6.0 - Thème Old School Hacker (Clarté Optimisée)
+   Changement : Police 'IBM Plex Mono' pour une lisibilité maximale
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Import de la police IBM Plex Mono pour un look propre et lisible */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+/* ═══ VARIABLES COULEUR (Vert Éteint Pro) ═══ */
+:root {
+    --bg-deep: #000000;        /* Noir Absolu */
+    --main-text: #00A000;      /* VERT ÉTEINT (P39 Moniteur) */
+    --primary-color: #00A000;  
+    --secondary-color: #007000; /* Vert Diminué/Infos */
+    --error-color: #FF0000;    
+    --success-color: #00A000;  
+    --shadow-light: rgba(0, 160, 0, 0.7); /* Glow Vert Sombre */
+}
+
+/* ═══ BASE & EFFET DE FOND ═══ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--bg-deep);
+    color: var(--main-text);
+    font-family: 'IBM Plex Mono', monospace;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    font-size: 14px; 
+    filter: contrast(12) brightness(1.2); /* Effet CRT */
+}
+
+/* ═══ ANIMATION DE BRUIT DE FOND (GLITCH SUBTIL) ═══ */
+.container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkAgMAAAAVFhD0AAAACVBMVEX///8zMzNra2s9VPT+AAAAEklEQVQ4jWNgGAWjYBSMGgAAAasAARQc0dAAAAAASUVORK5CYII=');
+    background-size: 100px;
+    opacity: 0.08; 
+    pointer-events: none;
+    animation: noise 3s infinite steps(4);
+    z-index: 1;
+}
+
+@keyframes noise {
+    0%, 100% { background-position: 0 0; }
+    10% { background-position: -5px -5px; }
+    20% { background-position: -10px -10px; }
+    30% { background-position: -15px -15px; }
+}
+
+
+/* ═══ TERMINAL WINDOW ═══ */
+.container {
+    width: 95%;
+    max-width: 1100px;
+    height: 90vh;
+    box-shadow: 0 0 60px var(--shadow-light); 
+    position: relative;
+    z-index: 10;
+}
+
+.window {
+    background: var(--bg-deep); 
+    border: 3px solid var(--primary-color); 
+    border-radius: 0; 
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    animation: glitch-flicker 10s infinite alternate;
+}
+
+@keyframes glitch-flicker {
+    0%, 90% { transform: translate(0, 0); }
+    92% { transform: translate(-0.5px, 0.5px); }
+    95% { transform: translate(0.5px, -0.5px); }
+    98% { transform: translate(0, 0); }
+}
+
+/* ═══ HEADER CLASSIQUE ═══ */
+.window-header {
+    background: #001000; 
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--secondary-color);
+}
+
+.window-buttons {
+    display: none; 
+}
+
+.window-title {
+    color: var(--primary-color);
+    font-size: 16px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px var(--shadow-light);
+}
+
+/* ═══ CORPS DU TERMINAL ═══ */
+.terminal-body {
+    flex: 1;
+    padding: 20px 30px;
+    overflow-y: auto;
+    font-size: 14px; 
+    text-shadow: 0 0 1px var(--primary-color), 0 0 5px var(--secondary-color);
+}
+
+/* Style de Scrollbar Vert */
+.terminal-body::-webkit-scrollbar {
+    width: 8px;
+}
+.terminal-body::-webkit-scrollbar-track {
+    background: #111;
+}
+.terminal-body::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+.terminal-body::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
+}
+
+/* Lignes de sortie (Flicker Text) */
+.output-line {
+    margin-bottom: 5px;
+    line-height: 1.6; 
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    animation: text-flicker 15s infinite alternate;
+}
+
+@keyframes text-flicker {
+    0% { opacity: 1; }
+    5% { opacity: 0.98; }
+    10% { opacity: 1; }
+    70% { opacity: 1; }
+    72% { opacity: 0.9; }
+    75% { opacity: 1; }
+    100% { opacity: 1; }
+}
+
+/* Styles sémantiques */
+.command { color: #ccffcc; font-weight: 600; }
+.error { color: var(--error-color); font-weight: bold; text-shadow: 0 0 5px var(--error-color); }
+.success { color: var(--success-color); font-weight: bold; }
+.info { color: #33ffcc; } 
+.warning { color: #FFFF00; }
+
+/* ASCII Art */
+.ascii-art {
+    color: var(--primary-color);
+    font-size: 20px;
+    line-height: 1;
+    font-weight: bold;
+    text-shadow: 0 0 20px var(--shadow-light);
+    margin: 20px 0;
+}
+
+/* ═══ INPUT LINE ═══ */
+.input-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 30px;
+    background: var(--bg-deep);
+    border-top: 2px solid var(--primary-color);
+}
+
+.input-prompt {
+    color: var(--primary-color);
+    font-weight: 600;
+    white-space: nowrap;
+    font-size: 14px;
+}
+
+#terminal-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--main-text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    outline: none;
+    caret-color: var(--primary-color);
+}
+
+/* ═══ EFFETS SPÉCIAUX ET ANIMATIONS ═══ */
+
+/* Effet GLOW */
+.glow {
+    text-shadow: 0 0 10px var(--shadow-light), 0 0 30px rgba(0, 160, 0, 0.4);
+    animation: pulseGlow 1.5s infinite alternate;
+}
+
+@keyframes pulseGlow {
+    from { opacity: 1; }
+    to { opacity: 0.8; }
+}
+
+/* Mode Panic (Shutdown) */
+@keyframes panic {
+    0%, 100% { background: var(--bg-deep); }
+    50% { background: #550000; }
+}
+.panic-mode {
+    animation: panic 0.1s 10;
+}
+
+/* Popup (Retiré du JS, mais style conservé si besoin) */
+.popup {
+    display: none; /* Rendu inutile par la nouvelle UX */
+}
+
+/* Firefly/Confetti */
+.firefly {
+    color: var(--primary-color);
+    text-shadow: 0 0 5px var(--primary-color);
+}
+.confetti {
+    opacity: 0.9;
+}
