@@ -1,238 +1,241 @@
-/* ═══════════════════════════════════════════════════════════════
-   NIRD OS v6.0 - Thème Old School Hacker (Clarté Optimisée)
-   Changement : Police 'IBM Plex Mono' pour une lisibilité maximale
-   ═══════════════════════════════════════════════════════════════ */
-
-/* Import de la police IBM Plex Mono pour un look propre et lisible */
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap');
-
-/* ═══ VARIABLES COULEUR (Vert Éteint Pro) ═══ */
 :root {
-    --bg-deep: #000000;        /* Noir Absolu */
-    --main-text: #00A000;      /* VERT ÉTEINT (P39 Moniteur) */
-    --primary-color: #00A000;  
-    --secondary-color: #007000; /* Vert Diminué/Infos */
-    --error-color: #FF0000;    
-    --success-color: #00A000;  
-    --shadow-light: rgba(0, 160, 0, 0.7); /* Glow Vert Sombre */
+    /* PALETTE PROFESSIONNELLE NOIR ET VERT */
+    --main-color: #00ff00;    /* Vert éclatant pour le texte actif/principal */
+    --dim-color: #008000;     /* Vert d'une intensité moyenne pour les bordures/lignes */
+    --bg-color: #000000;      /* Noir pur */
+    --error-color: #ff0000;   /* Rouge franc pour les erreurs critiques */
+    --system-color: #00aaff;  /* Bleu cyan pour les messages système/kernel */
+    /* Forte luminescence (glow) pour l'effet CRT, mais ciblé */
+    --glow: 0 0 5px rgba(0, 255, 0, 0.9), 0 0 15px rgba(0, 255, 0, 0.2); 
 }
 
-/* ═══ BASE & EFFET DE FOND ═══ */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
-    background: var(--bg-deep);
-    color: var(--main-text);
-    font-family: 'IBM Plex Mono', monospace;
-    overflow: hidden;
+    margin: 0;
     height: 100vh;
+    background-color: var(--bg-color);
+    color: var(--main-color);
+    font-family: 'VT323', monospace; 
+    font-size: 20px; 
+    overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
-    position: relative;
-    font-size: 14px; 
-    filter: contrast(12) brightness(1.2); /* Effet CRT */
+    perspective: 1000px;
+    transition: all 0.2s; 
 }
 
-/* ═══ ANIMATION DE BRUIT DE FOND (GLITCH SUBTIL) ═══ */
-.container::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkAgMAAAAVFhD0AAAACVBMVEX///8zMzNra2s9VPT+AAAAEklEQVQ4jWNgGAWjYBSMGgAAAasAARQc0dAAAAAASUVORK5CYII=');
-    background-size: 100px;
-    opacity: 0.08; 
-    pointer-events: none;
-    animation: noise 3s infinite steps(4);
+/* --- EFFETS VISUELS PRO-HACKER --- */
+
+/* 1. FLUX DE DONNÉES EN ARRIÈRE-PLAN (Matrix subtil) */
+.matrix-bg {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    /* Utilisation de lignes de balayage très espacées et sombres */
+    background-image: 
+        linear-gradient(0deg, transparent 20%, rgba(0, 255, 0, 0.04) 21%, rgba(0, 255, 0, 0.04) 22%, transparent 23%), 
+        linear-gradient(90deg, transparent 20%, rgba(0, 255, 0, 0.04) 21%, rgba(0, 255, 0, 0.04) 22%, transparent 23%);
+    background-size: 80px 80px; /* Plus grandes cases, moins visibles */
+    animation: moveBackground 30s linear infinite; /* Animation plus lente */
     z-index: 1;
+    opacity: 0.2; /* Très discret */
 }
 
-@keyframes noise {
-    0%, 100% { background-position: 0 0; }
-    10% { background-position: -5px -5px; }
-    20% { background-position: -10px -10px; }
-    30% { background-position: -15px -15px; }
+@keyframes moveBackground {
+    from { background-position: 0 0; }
+    to { background-position: 0 100%; }
+}
+
+/* 2. EFFETS CRT & ANIMATIONS (High Quality) */
+.crt-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    /* Vignette prononcée et légère distorsion radiale */
+    box-shadow: inset 0 0 200px rgba(0,0,0,0.9);
+    background: radial-gradient(circle, rgba(0,0,0,0) 65%, rgba(0,0,0,0.9) 100%);
+    pointer-events: none; z-index: 10;
+}
+
+.scanline {
+    width: 100%; height: 2px; /* Ligne très fine */
+    z-index: 11; 
+    background: linear-gradient(to bottom, rgba(0, 255, 0, 0.2) 50%, rgba(0, 0, 0, 0.5) 100%);
+    opacity: 0.25; 
+    position: absolute; top: 0;
+    animation: scanline 4s linear infinite; /* Vitesse modérée */
+    pointer-events: none;
+}
+@keyframes scanline { 0% { top: -2%; } 100% { top: 102%; } }
+
+.screen-flicker {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    background: rgba(0, 255, 0, 0.005); /* Pratiquement invisible */
+    z-index: 12; pointer-events: none; 
+    animation: flicker 0.1s infinite; /* Plus rapide mais moins intense */
+}
+/* Flicker très subtil, juste un bruit */
+@keyframes flicker { 
+    0% { opacity: 0.99; } 
+    50% { opacity: 1; } 
+    100% { opacity: 0.995; } 
 }
 
 
-/* ═══ TERMINAL WINDOW ═══ */
-.container {
-    width: 95%;
-    max-width: 1100px;
-    height: 90vh;
-    box-shadow: 0 0 60px var(--shadow-light); 
-    position: relative;
-    z-index: 10;
+/* --- CONTENEUR ET FENÊTRE TERMINAL --- */
+.terminal-wrapper {
+    width: 90%; max-width: 1100px; /* Plus large pour un look plus desktop */
+    height: 85vh;
+    border: 4px solid var(--dim-color); 
+    background-color: var(--bg-color);
+    /* Ombre extérieure et intérieure sophistiquées */
+    box-shadow: 
+        0 0 20px var(--dim-color), 
+        inset 0 0 20px rgba(0, 0, 0, 0.9),
+        0 0 50px rgba(0, 255, 0, 0.1); 
+    padding: 20px; 
+    position: relative; z-index: 20;
+    transform: rotateX(1deg); /* Rotation subtile */
+    text-shadow: var(--glow);
 }
 
-.window {
-    background: var(--bg-deep); 
-    border: 3px solid var(--primary-color); 
-    border-radius: 0; 
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    animation: glitch-flicker 10s infinite alternate;
+/* Animation de tremblement plus violente pour les erreurs */
+.shake-screen { 
+    animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; 
+    box-shadow: 
+        0 0 20px var(--error-color), 
+        inset 0 0 10px rgba(255, 0, 0, 0.5); /* Effet de court-circuit */
+}
+@keyframes shake {
+  10%, 90% { transform: rotateX(1deg) translate3d(-2px, 0, 0); }
+  20%, 80% { transform: rotateX(1deg) translate3d(4px, 0, 0); }
+  30%, 50%, 70% { transform: rotateX(1deg) translate3d(-6px, 0, 0); }
+  40%, 60% { transform: rotateX(1deg) translate3d(6px, 0, 0); }
 }
 
-@keyframes glitch-flicker {
-    0%, 90% { transform: translate(0, 0); }
-    92% { transform: translate(-0.5px, 0.5px); }
-    95% { transform: translate(0.5px, -0.5px); }
-    98% { transform: translate(0, 0); }
+.terminal-screen {
+    height: 100%; overflow-y: auto; display: flex; flex-direction: column; scrollbar-width: none;
+}
+.terminal-screen::-webkit-scrollbar { display: none; }
+
+/* --- ÉLÉMENTS DE TEXTE (Style Console) --- */
+.header-bar {
+    border-bottom: 1px solid var(--dim-color); 
+    padding-bottom: 5px; margin-bottom: 15px; 
+    display: flex; justify-content: space-between; font-size: 0.9em; letter-spacing: 2px;
 }
 
-/* ═══ HEADER CLASSIQUE ═══ */
-.window-header {
-    background: #001000; 
-    padding: 10px 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid var(--secondary-color);
+.output-area { 
+    flex-grow: 1; 
+    white-space: pre-wrap; 
+    padding-bottom: 10px;
 }
 
-.window-buttons {
-    display: none; 
+/* Hiérarchie de couleur professionnelle */
+.line { 
+    margin-bottom: 2px; 
+    line-height: 1.1; 
 }
-
-.window-title {
-    color: var(--primary-color);
-    font-size: 16px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    text-shadow: 0 0 10px var(--shadow-light);
+.line.user { 
+    color: #fff; /* L'entrée utilisateur est en blanc (haute visibilité) */
 }
-
-/* ═══ CORPS DU TERMINAL ═══ */
-.terminal-body {
-    flex: 1;
-    padding: 20px 30px;
-    overflow-y: auto;
-    font-size: 14px; 
-    text-shadow: 0 0 1px var(--primary-color), 0 0 5px var(--secondary-color);
+.line.system { 
+    color: var(--system-color); /* Messages système en bleu (kernel, info réseau) */
 }
-
-/* Style de Scrollbar Vert */
-.terminal-body::-webkit-scrollbar {
-    width: 8px;
-}
-.terminal-body::-webkit-scrollbar-track {
-    background: #111;
-}
-.terminal-body::-webkit-scrollbar-thumb {
-    background: var(--primary-color);
-    border-radius: 4px;
-}
-.terminal-body::-webkit-scrollbar-thumb:hover {
-    background: var(--secondary-color);
-}
-
-/* Lignes de sortie (Flicker Text) */
-.output-line {
-    margin-bottom: 5px;
-    line-height: 1.6; 
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    animation: text-flicker 15s infinite alternate;
-}
-
-@keyframes text-flicker {
-    0% { opacity: 1; }
-    5% { opacity: 0.98; }
-    10% { opacity: 1; }
-    70% { opacity: 1; }
-    72% { opacity: 0.9; }
-    75% { opacity: 1; }
-    100% { opacity: 1; }
-}
-
-/* Styles sémantiques */
-.command { color: #ccffcc; font-weight: 600; }
-.error { color: var(--error-color); font-weight: bold; text-shadow: 0 0 5px var(--error-color); }
-.success { color: var(--success-color); font-weight: bold; }
-.info { color: #33ffcc; } 
-.warning { color: #FFFF00; }
-
-/* ASCII Art */
-.ascii-art {
-    color: var(--primary-color);
-    font-size: 20px;
-    line-height: 1;
+.line.error { 
+    color: var(--error-color); 
+    text-shadow: 0 0 3px var(--error-color); /* Léger glow rouge sur les erreurs */
     font-weight: bold;
-    text-shadow: 0 0 20px var(--shadow-light);
-    margin: 20px 0;
+}
+.line.success { 
+    color: var(--main-color); 
+}
+.hacking-text { 
+    color: var(--main-color); 
+    text-shadow: var(--glow); 
+    font-size: 1.1em; 
+    font-weight: bold; /* Texte de hack en gras */
 }
 
-/* ═══ INPUT LINE ═══ */
-.input-line {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 15px 30px;
-    background: var(--bg-deep);
-    border-top: 2px solid var(--primary-color);
+/* Zone de saisie */
+.input-area { display: flex; align-items: center; }
+.prompt { 
+    color: var(--main-color); 
+    margin-right: 5px; 
+    font-weight: bold; 
 }
 
-.input-prompt {
-    color: var(--primary-color);
-    font-weight: 600;
-    white-space: nowrap;
-    font-size: 14px;
+input {
+    background: transparent; border: none; 
+    color: #fff; 
+    font-family: 'VT323', monospace; 
+    font-size: 20px; 
+    flex-grow: 1; outline: none;
+    caret-color: transparent; text-transform: none; 
+    text-shadow: var(--glow);
+}
+.cursor {
+    animation: blink 0.7s steps(2, start) infinite; /* Clignotement plus rapide */
+    background-color: var(--main-color);
+    color: var(--bg-color); 
+    padding: 0 2px; 
+    margin-left: 2px;
+}
+@keyframes blink { to { visibility: hidden; } }
+
+/* --- MODAL DE SUCCÈS (Visuel de fin de mission) --- */
+.modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.98); /* Plus opaque */
+    display: flex; justify-content: center;
+    align-items: center; z-index: 100; backdrop-filter: blur(8px);
+}
+.hidden { display: none !important; }
+
+.modal-content {
+    text-align: center; border: 4px solid var(--main-color); padding: 50px;
+    background: var(--bg-color); 
+    box-shadow: 0 0 70px var(--main-color), inset 0 0 30px var(--dim-color);
+    max-width: 650px; width: 85%;
+}
+.glitch {
+    font-size: 3.5em; 
+    font-weight: normal; position: relative;
+    /* Effet Glitch 3D Vert/Rouge/Cyan */
+    text-shadow: 4px 4px 0px var(--system-color), -4px -4px 0px var(--error-color);
+    animation: glitch 0.3s infinite linear alternate-reverse; /* Glitch plus rapide et intense */
 }
 
-#terminal-input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: var(--main-text);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 14px;
-    outline: none;
-    caret-color: var(--primary-color);
+/* Animation Glitch plus intense */
+@keyframes glitch {
+    0% { transform: translate(0); }
+    15% { transform: translate(-5px, 0); }
+    30% { transform: translate(5px, 0); }
+    45% { transform: translate(-3px, 3px); clip-path: polygon(0 0, 100% 0, 100% 40%, 0 40%); }
+    60% { transform: translate(3px, -3px); clip-path: polygon(0 60%, 100% 60%, 100% 100%, 0 100%); }
+    75% { transform: translate(-4px, 4px); }
+    100% { transform: translate(0); }
 }
 
-/* ═══ EFFETS SPÉCIAUX ET ANIMATIONS ═══ */
-
-/* Effet GLOW */
-.glow {
-    text-shadow: 0 0 10px var(--shadow-light), 0 0 30px rgba(0, 160, 0, 0.4);
-    animation: pulseGlow 1.5s infinite alternate;
+/* --- EFFET DISCO MODE (Konami Code) --- */
+.disco-mode body {
+    color: #fff !important; 
+    filter: brightness(1.2); /* Ajoute de l'éclat */
 }
 
-@keyframes pulseGlow {
-    from { opacity: 1; }
-    to { opacity: 0.8; }
+#disco-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 99; pointer-events: none;
+    /* Bandes RGB très marquées */
+    background: repeating-linear-gradient(
+        45deg,
+        rgba(255, 0, 0, 0.2),
+        rgba(0, 255, 0, 0.2) 15%, 
+        rgba(0, 0, 255, 0.2) 30%
+    );
+    animation: pulse-disco 0.6s infinite alternate;
 }
+#disco-overlay.hidden { display: none; }
 
-/* Mode Panic (Shutdown) */
-@keyframes panic {
-    0%, 100% { background: var(--bg-deep); }
-    50% { background: #550000; }
-}
-.panic-mode {
-    animation: panic 0.1s 10;
-}
-
-/* Popup (Retiré du JS, mais style conservé si besoin) */
-.popup {
-    display: none; /* Rendu inutile par la nouvelle UX */
-}
-
-/* Firefly/Confetti */
-.firefly {
-    color: var(--primary-color);
-    text-shadow: 0 0 5px var(--primary-color);
-}
-.confetti {
-    opacity: 0.9;
+@keyframes pulse-disco {
+    from { opacity: 0.2; filter: saturate(2); }
+    to { opacity: 0.5; filter: saturate(4); }
 }
