@@ -1,19 +1,15 @@
-/* ═══════════════════════════════════════════════════════════════
-   NIRD OS v6.0 - Thème Fusion (IBM Plex + Effets CRT/Glitch)
-   ═══════════════════════════════════════════════════════════════ */
-
 /* Import de la police IBM Plex Mono pour un look propre et lisible */
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap');
 
 /* ═══ VARIABLES COULEUR ═══ */
 :root {
-    --bg-deep: #000000;      /* Noir Absolu */
-    --main-text: #00A000;    /* VERT ÉTEINT (P39 Moniteur) */
-    --primary-color: #00A000; 
+    --bg-deep: #000000;       /* Noir Absolu */
+    --main-text: #00A000;     /* VERT ÉTEINT (P39 Moniteur) */
+    --primary-color: #00A000;
     --secondary-color: #007000; /* Vert Diminué/Infos */
-    --error-color: #FF0000;   
-    --success-color: #00A000; 
-    --shadow-light: rgba(0, 160, 0, 0.9); /* Glow Vert Sombre Fort */
+    --error-color: #FF0000;
+    --success-color: #00A000;
+    --shadow-light: rgba(0, 160, 0, 0.5); /* Glow Vert Sombre Adouci (Opacité réduite de 0.9 à 0.5) */
     /* Nouveau glow pour le texte */
     --glow-text: 0 0 1px var(--primary-color), 0 0 5px var(--secondary-color);
     /* Glow général du terminal */
@@ -37,7 +33,8 @@ body {
     justify-content: center;
     align-items: center;
     position: relative;
-    font-size: 14px; 
+    font-size: 14px;
+    font-weight: 600; /* Assuré que la police est en gras */
     /* Effet CRT (Important) */
     filter: contrast(12) brightness(1.2) drop-shadow(0 0 5px var(--primary-color));
     perspective: 1000px;
@@ -46,12 +43,12 @@ body {
 /* --- EFFETS CRT & ANIMATIONS (Simulation d'écran cathodique) --- */
 .matrix-bg {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background-image: 
-        linear-gradient(0deg, transparent 20%, rgba(0, 160, 0, 0.06) 21%, rgba(0, 160, 0, 0.06) 22%, transparent 23%), 
+    background-image:
+        linear-gradient(0deg, transparent 20%, rgba(0, 160, 0, 0.06) 21%, rgba(0, 160, 0, 0.06) 22%, transparent 23%),
         linear-gradient(90deg, transparent 20%, rgba(0, 160, 0, 0.06) 21%, rgba(0, 160, 0, 0.06) 22%, transparent 23%);
-    background-size: 80px 80px; 
-    animation: moveBackground 30s linear infinite; 
-    z-index: 1; opacity: 0.3; 
+    background-size: 80px 80px;
+    animation: moveBackground 30s linear infinite;
+    z-index: 1; opacity: 0.3;
 }
 @keyframes moveBackground {
     from { background-position: 0 0; }
@@ -60,30 +57,30 @@ body {
 
 .crt-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    box-shadow: inset 0 0 250px rgba(0,0,0,0.9); 
+    box-shadow: inset 0 0 250px rgba(0,0,0,0.9);
     background: radial-gradient(circle, rgba(0,0,0,0) 65%, rgba(0,0,0,0.9) 100%);
     pointer-events: none; z-index: 10;
 }
 
 .scanline {
-    width: 100%; height: 2px; 
-    z-index: 11; 
-    background: linear-gradient(to bottom, rgba(0, 160, 0, 0.3) 50%, rgba(0, 0, 0, 0.6) 100%); 
-    opacity: 0.35; 
+    width: 100%; height: 2px;
+    z-index: 11;
+    background: linear-gradient(to bottom, rgba(0, 160, 0, 0.3) 50%, rgba(0, 0, 0, 0.6) 100%);
+    opacity: 0.35;
     position: absolute; top: 0;
-    animation: scanline 4s linear infinite; 
+    animation: scanline 4s linear infinite;
     pointer-events: none;
 }
 @keyframes scanline { 0% { top: -2%; } 100% { top: 102%; } }
 
 .screen-flicker {
     position: fixed; top:0; left:0; width:100%; height:100%;
-    background: rgba(0, 160, 0, 0.01); 
-    z-index: 12; pointer-events: none; 
-    animation: flicker 0.1s infinite; 
+    background: rgba(0, 160, 0, 0.01);
+    z-index: 12; pointer-events: none;
+    animation: flicker 0.1s infinite;
 }
-@keyframes flicker { 
-    0% { opacity: 0.99; } 50% { opacity: 1; } 100% { opacity: 0.995; } 
+@keyframes flicker {
+    0% { opacity: 0.99; } 50% { opacity: 1; } 100% { opacity: 0.995; }
 }
 /* Fin des effets CRT */
 
@@ -91,8 +88,8 @@ body {
 /* ═══ TERMINAL WINDOW ═══ */
 .container {
     width: 95%; max-width: 1100px; height: 90vh;
-    /* Utilisation de la nouvelle variable glow */
-    box-shadow: 0 0 60px var(--shadow-light), var(--glow-terminal); 
+    /* Rendu plus doux: 30px au lieu de 60px et opacité de --shadow-light réduite */
+    box-shadow: 0 0 30px var(--shadow-light), var(--glow-terminal);
     position: relative; z-index: 20;
     /* Ajout de la rotation 3D légère */
     transform: rotateX(1deg);
@@ -100,23 +97,29 @@ body {
 }
 
 .window {
-    background: var(--bg-deep); 
-    border: 3px solid var(--primary-color); 
-    border-radius: 0; 
+    background: var(--bg-deep);
+    border: 3px solid var(--primary-color);
+    border-radius: 0;
     overflow: hidden;
     display: flex; flex-direction: column;
     height: 100%;
     /* Utilisation de l'animation de glitch subtil */
     animation: glitch-flicker 10s infinite alternate;
 }
+/* Correction: Ajout de l'animation manquante pour `glitch-flicker` */
+@keyframes glitch-flicker {
+    0%, 98% { filter: hue-rotate(0deg); }
+    99% { filter: hue-rotate(1deg); }
+    100% { filter: hue-rotate(0deg); }
+}
 
 /* 💥 NOUVEAU: BUFFER OVERFLOW VISUEL (Glitch 3D sur le wrapper) */
 #main-wrapper.overflow-glitch {
     transform: rotateX(1deg) rotateZ(0.5deg) skewX(-1deg) translateZ(10px) !important;
-    animation: buffer-flicker 0.1s infinite alternate; 
-    box-shadow: 
-        0 0 30px var(--error-color), 
-        inset 0 0 20px rgba(255, 0, 0, 0.7) !important; 
+    animation: buffer-flicker 0.1s infinite alternate;
+    box-shadow:
+        0 0 30px var(--error-color),
+        inset 0 0 20px rgba(255, 0, 0, 0.7) !important;
 }
 @keyframes buffer-flicker {
     from { opacity: 1; }
@@ -124,11 +127,11 @@ body {
 }
 
 /* NOUVEAU: Shake (pour les erreurs) */
-.shake-screen { 
-    animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; 
-    box-shadow: 
-        0 0 20px var(--error-color), 
-        inset 0 0 10px rgba(255, 0, 0, 0.5); 
+.shake-screen {
+    animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
+    box-shadow:
+        0 0 20px var(--error-color),
+        inset 0 0 10px rgba(255, 0, 0, 0.5);
 }
 @keyframes shake {
   10%, 90% { transform: rotateX(1deg) translate3d(-2px, 0, 0); }
@@ -139,7 +142,7 @@ body {
 
 /* Header et Titre */
 .window-header {
-    background: #001000; 
+    background: #001000;
     padding: 10px 15px;
     display: flex; justify-content: space-between; align-items: center;
     border-bottom: 2px solid var(--secondary-color);
@@ -153,9 +156,9 @@ body {
 /* ═══ CORPS DU TERMINAL ═══ */
 .terminal-body {
     flex: 1; padding: 20px 30px; overflow-y: auto;
-    font-size: 14px; 
+    font-size: 14px;
     /* Utilisation du nouveau glow pour le texte */
-    text-shadow: var(--glow-text); 
+    text-shadow: var(--glow-text);
 }
 
 /* Scrollbar (conservée de votre code) */
@@ -179,7 +182,7 @@ body {
 .command { color: #ccffcc; font-weight: 600; }
 .error { color: var(--error-color); font-weight: bold; text-shadow: 0 0 5px var(--error-color), 0 0 15px rgba(255, 0, 0, 0.3); } /* Amélioré */
 .success { color: var(--success-color); font-weight: bold; }
-.info { color: #33ffcc; } 
+.info { color: #33ffcc; }
 .warning { color: #FFFF00; }
 
 /* ASCII Art */
@@ -233,15 +236,15 @@ body {
 /* --- MODAL DE SUCCÈS (Mise à jour) --- */
 .modal {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.98); 
-    display: flex; justify-content: center; align-items: center; 
+    background: rgba(0, 0, 0, 0.98);
+    display: flex; justify-content: center; align-items: center;
     z-index: 100; backdrop-filter: blur(8px);
 }
 .hidden { display: none !important; }
 
 .modal-content {
     text-align: center; border: 4px solid var(--primary-color); padding: 50px;
-    background: var(--bg-deep); 
+    background: var(--bg-deep);
     box-shadow: 0 0 70px var(--primary-color), inset 0 0 30px var(--secondary-color);
     max-width: 650px; width: 85%;
 }
@@ -250,7 +253,7 @@ body {
     font-weight: bold; position: relative;
     color: var(--primary-color);
     text-shadow: 4px 4px 0px #33ffcc, -4px -4px 0px var(--error-color);
-    animation: glitch-modal 0.3s infinite linear alternate-reverse; 
+    animation: glitch-modal 0.3s infinite linear alternate-reverse;
     margin-bottom: 20px;
 }
 .modal-content button {
