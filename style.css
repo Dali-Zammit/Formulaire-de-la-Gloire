@@ -34,13 +34,14 @@ body {
     align-items: center;
     position: relative;
     font-size: 14px;
-    font-weight: 600; /* Assuré que la police est en gras */
+    font-weight: 600; 
     /* Effet CRT (Important) */
     filter: contrast(12) brightness(1.2) drop-shadow(0 0 5px var(--primary-color));
     perspective: 1000px;
 }
 
 /* --- EFFETS CRT & ANIMATIONS (Simulation d'écran cathodique) --- */
+/* (Note: Je garde les couleurs de grille en vert, l'effet Matrix va surcharger) */
 .matrix-bg {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background-image:
@@ -88,10 +89,8 @@ body {
 /* ═══ TERMINAL WINDOW ═══ */
 .container {
     width: 95%; max-width: 1100px; height: 90vh;
-    /* Rendu plus doux: 30px au lieu de 60px et opacité de --shadow-light réduite */
     box-shadow: 0 0 30px var(--shadow-light), var(--glow-terminal);
     position: relative; z-index: 20;
-    /* Ajout de la rotation 3D légère */
     transform: rotateX(1deg);
     transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
 }
@@ -103,17 +102,15 @@ body {
     overflow: hidden;
     display: flex; flex-direction: column;
     height: 100%;
-    /* Utilisation de l'animation de glitch subtil */
     animation: glitch-flicker 10s infinite alternate;
 }
-/* Correction: Ajout de l'animation manquante pour `glitch-flicker` */
 @keyframes glitch-flicker {
     0%, 98% { filter: hue-rotate(0deg); }
     99% { filter: hue-rotate(1deg); }
     100% { filter: hue-rotate(0deg); }
 }
 
-/* 💥 NOUVEAU: BUFFER OVERFLOW VISUEL (Glitch 3D sur le wrapper) */
+/* 💥 BUFFER OVERFLOW VISUEL (Glitch 3D sur le wrapper) */
 #main-wrapper.overflow-glitch {
     transform: rotateX(1deg) rotateZ(0.5deg) skewX(-1deg) translateZ(10px) !important;
     animation: buffer-flicker 0.1s infinite alternate;
@@ -126,7 +123,7 @@ body {
     to { opacity: 0.8; }
 }
 
-/* NOUVEAU: Shake (pour les erreurs) */
+/* 💥 Shake (pour les erreurs) */
 .shake-screen {
     animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
     box-shadow:
@@ -139,6 +136,59 @@ body {
   30%, 50%, 70% { transform: rotateX(1deg) translate3d(-6px, 0, 0); }
   40%, 60% { transform: rotateX(1deg) translate3d(6px, 0, 0); }
 }
+
+/* 💥 Scanline Glitch (pour ls, cat, sysinfo) */
+.scanline-glitch {
+    transform: rotateX(1deg) translateZ(0); 
+    animation: scan-glitch 0.2s linear 1;
+    box-shadow: 
+        0 0 40px rgba(0, 255, 0, 0.8), 
+        inset 0 0 15px rgba(0, 255, 0, 0.5) !important;
+}
+@keyframes scan-glitch {
+    0% { clip-path: inset(0 0 0 0); }
+    50% { clip-path: inset(20% 0 70% 0); } 
+    100% { clip-path: inset(0 0 0 0); }
+}
+
+/* 💥 Water Ripple (pour clear) */
+.water-ripple {
+    animation: water-ripple 0.5s ease-out 1;
+    filter: hue-rotate(-10deg);
+}
+@keyframes water-ripple {
+    0% { transform: rotateX(1deg) scale(1); filter: hue-rotate(0deg); }
+    50% { transform: rotateX(1deg) scale(0.98); filter: hue-rotate(20deg); }
+    100% { transform: rotateX(1deg) scale(1); filter: hue-rotate(0deg); }
+}
+
+/* 💥 Synth Flash (pour help) */
+.synth-flash {
+    animation: synth-flash 0.15s ease-in 1;
+    box-shadow: 
+        0 0 70px #00FFFF, 
+        var(--glow-terminal) !important;
+}
+@keyframes synth-flash {
+    0% { opacity: 1; }
+    50% { opacity: 0.1; }
+    100% { opacity: 1; }
+}
+
+
+/* 💥 Matrix Mode (MAJ COULEURS CYBER BLUE) */
+#main-wrapper.matrix-mode {
+    transform: rotateX(1deg) scale(1.01); 
+    /* Changement de la teinte générale lors du mode Matrix */
+    filter: hue-rotate(180deg) saturate(1.5); 
+    transition: all 0.5s ease-out;
+}
+#main-wrapper.matrix-mode .window-title {
+    color: #00FFFF; /* CYAN */
+    /* Changement du glow pour un effet Cyber Blue */
+    text-shadow: 0 0 15px #00FFFF, 0 0 30px rgba(0, 255, 255, 0.5); 
+}
+
 
 /* Header et Titre */
 .window-header {
@@ -157,11 +207,10 @@ body {
 .terminal-body {
     flex: 1; padding: 20px 30px; overflow-y: auto;
     font-size: 14px;
-    /* Utilisation du nouveau glow pour le texte */
     text-shadow: var(--glow-text);
 }
 
-/* Scrollbar (conservée de votre code) */
+/* Scrollbar */
 .terminal-body::-webkit-scrollbar { width: 8px; }
 .terminal-body::-webkit-scrollbar-track { background: #111; }
 .terminal-body::-webkit-scrollbar-thumb { background: var(--primary-color); border-radius: 4px; }
@@ -180,7 +229,7 @@ body {
 
 /* Styles sémantiques */
 .command { color: #ccffcc; font-weight: 600; }
-.error { color: var(--error-color); font-weight: bold; text-shadow: 0 0 5px var(--error-color), 0 0 15px rgba(255, 0, 0, 0.3); } /* Amélioré */
+.error { color: var(--error-color); font-weight: bold; text-shadow: 0 0 5px var(--error-color), 0 0 15px rgba(255, 0, 0, 0.3); } 
 .success { color: var(--success-color); font-weight: bold; }
 .info { color: #33ffcc; }
 .warning { color: #FFFF00; }
@@ -188,9 +237,9 @@ body {
 /* ASCII Art */
 .ascii-art {
     color: var(--primary-color);
-    font-size: 24px; /* Agrandit légèrement */
+    font-size: 24px; 
     line-height: 1; font-weight: bold;
-    text-shadow: 0 0 20px var(--shadow-light), 0 0 40px rgba(0, 160, 0, 0.3); /* Amélioré */
+    text-shadow: 0 0 20px var(--shadow-light), 0 0 40px rgba(0, 160, 0, 0.3); 
     margin: 20px 0;
 }
 
@@ -212,7 +261,7 @@ body {
     text-shadow: var(--glow-text);
 }
 
-/* 💥 NOUVEAU: Style de l'input en cas de Buffer Overflow */
+/* 💥 Style de l'input en cas de Buffer Overflow */
 #terminal-input.overflow-alert {
     color: var(--error-color) !important;
     text-shadow: 0 0 5px var(--error-color) !important;
@@ -233,7 +282,7 @@ body {
     to { opacity: 0.8; }
 }
 
-/* --- MODAL DE SUCCÈS (Mise à jour) --- */
+/* --- MODAL DE SUCCÈS --- */
 .modal {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.98);
@@ -249,7 +298,7 @@ body {
     max-width: 650px; width: 85%;
 }
 .modal-content h1 {
-    font-size: 3em; /* Légèrement réduit pour l'espace */
+    font-size: 3em; 
     font-weight: bold; position: relative;
     color: var(--primary-color);
     text-shadow: 4px 4px 0px #33ffcc, -4px -4px 0px var(--error-color);
@@ -281,7 +330,7 @@ body {
     100% { transform: translate(0); }
 }
 
-/* 💥 NOUVEAU: Barre de progression finale */
+/* 💥 Barre de progression finale */
 .progress-bar-final {
     width: 80%;
     height: 15px;
@@ -295,7 +344,7 @@ body {
     width: 0%;
     background: var(--success-color);
     box-shadow: 0 0 8px var(--success-color);
-    animation: final-fill 4s forwards; /* Animation déclenchée à l'affichage */
+    animation: final-fill 4s forwards; 
 }
 @keyframes final-fill {
     to { width: 100%; }

@@ -27,8 +27,8 @@ let formStep = 0;
 let formData = { name: '', email: '', subject: '', message: '' };
 const steps = ['name', 'email', 'subject', 'message'];
 const labels = [
-    "NOM DE L'OPÉRATEUR/ÉQUIPE", 
-    "CONTACT MAIL CHIFFRÉ",
+    "NOM DE L'ÉQUIPE", 
+    "CONTACT MAIL",
     "OBJET DE LA MISSION",
     "CONTENU DU MANIFESTE"
 ];
@@ -62,12 +62,36 @@ function playKeySound(){ playSound(650 + Math.random()*300,"square",0.03,0.15); 
 function playSubmitSound(){ playSound(450,"sawtooth",0.1,0.5); }
 function playErrorSound(){ playSound(150,"square",0.1,0.8); triggerShake(); }
 function playSuccessSound(){ [800,950,1100].forEach((f,i)=>setTimeout(()=>playSound(f,"sawtooth",0.05,0.3),i*50)); }
+function playInfoSound(){ playSound(400, "sine", 0.08, 0.4); } 
+function playClearSound(){ playSound(200, "square", 0.15, 0.6); }
 
 function triggerShake(){
     wrapper.classList.remove("shake-screen");
     void wrapper.offsetWidth;
     wrapper.classList.add("shake-screen");
 }
+
+function triggerScanlineGlitch(){
+    wrapper.classList.remove("scanline-glitch");
+    void wrapper.offsetWidth; 
+    wrapper.classList.add("scanline-glitch");
+    setTimeout(() => wrapper.classList.remove("scanline-glitch"), 200); 
+}
+
+function triggerWaterRipple(){
+    wrapper.classList.remove("water-ripple");
+    void wrapper.offsetWidth;
+    wrapper.classList.add("water-ripple");
+    setTimeout(() => wrapper.classList.remove("water-ripple"), 500);
+}
+
+function triggerSynthFlash(){
+    wrapper.classList.remove("synth-flash");
+    void wrapper.offsetWidth;
+    wrapper.classList.add("synth-flash");
+    setTimeout(() => wrapper.classList.remove("synth-flash"), 150);
+}
+
 
 // ============================================
 // FICHIERS SIMULES
@@ -89,10 +113,11 @@ echo "Décapage du système central... OK"`,
 // COMMANDES
 // ============================================
 const commands = {
-help: () => {
-    playSuccessSound();
-    return `╔══════════════════════════════╗
-║  📜 PROTOCOLES DISPONIBLES   ║
+    help: () => {
+        playSuccessSound();
+        triggerSynthFlash();
+        return `╔══════════════════════════════╗
+    PROTOCOLES DISPONIBLES  
 ╚══════════════════════════════╝
 📌 contact -> démarrer transmission
 📦 send    -> envoyer manifeste
@@ -104,22 +129,49 @@ help: () => {
 💬 mantra  -> citation de résistance
 🕶 matrix  -> cascade numérique
 💣 shutdown -> extinction critique`;
-},
+    },
 
-    ls: () => Object.keys(files).map(f=>"📄 "+f).join("\n"),
-    cat: fname => files[fname] ?? "❌ fichier introuvable",
+    ls: () => { 
+        playInfoSound();
+        triggerScanlineGlitch();
+        return Object.keys(files).map(f=>"📄 "+f).join("\n"); 
+    },
+    cat: fname => {
+        if(files[fname]){
+            playInfoSound();
+            triggerScanlineGlitch();
+            return files[fname];
+        }
+        playErrorSound();
+        return "❌ fichier introuvable";
+    },
     pwd: () => "/resistance/protocole",
     whoami: () => "👤 Résistant NIRD - Niveau 1",
-    clear: () => { output.innerHTML=""; return ""; },
-    history: () => commandHistory.map((c,i)=>`${i+1}: ${c}`).join("\n"),
+    clear: () => { 
+        playClearSound();
+        triggerWaterRipple();
+        output.innerHTML=""; 
+        return ""; 
+    },
+    history: async () => {
+        playInfoSound();
+        const delayLine = printLine("⏳ Recherche dans le journal chiffré...", "info");
+        await sleep(700);
+        delayLine.remove();
+        return commandHistory.map((c,i)=>`${i+1}: ${c}`).join("\n");
+    },
     contact: () => { startForm(); return ""; },
     send: () => { sendForm(); return ""; },
-    sysinfo: () => `
+    sysinfo: () => {
+        playInfoSound();
+        triggerScanlineGlitch();
+        return `
 [ NIRD CORE STATUS ]
 OS: v6.0 Open Source
 Shell: Chiffré
 Réseau: Tor
-Intégrité: 100% Anti-GAFAM`,
+Intégrité: 100% Anti-GAFAM`;
+    },
     
     mantra: () => {
         const list = [
@@ -130,9 +182,17 @@ Intégrité: 100% Anti-GAFAM`,
         return list[Math.floor(Math.random()*list.length)];
     },
 
-    matrix: () => {
+    matrix: async () => {
+        const line1 = printLine("Tentative d'activation du mode MATRICE...", "info");
         triggerMatrixRain();
-        return "🟢 MATRIX ACTIF";
+        playSuccessSound();
+
+        // Raccourci le délai total
+        await sleep(1000); 
+        line1.innerHTML = "✔ Mode MATRICE initialisé. Connexion au flux **DATA_STREAM**...";
+        
+        await sleep(500); // Raccourci le délai final
+        return "🔵 **CYBER-MATRIX ACTIF**"; 
     },
 
     shutdown: () => {
@@ -187,7 +247,7 @@ function startForm(){
     formMode=true;
     formStep=0;
     formData={name:"",email:"",subject:"",message:""};
-    print("📝 Entrez **NOM DE L'OPÉRATEUR/ÉQUIPE**");
+    print("📝 Entrez **NOM DE L'ÉQUIPE**");
     inputPrompt.textContent="INPUT>";
 }
 
@@ -210,7 +270,7 @@ function handleForm(input){
 
     if(formStep<steps.length){
         print(`✔ ${labels[formStep-1]} enregistré.
-➡ Entrer **${labels[formStep]}** :`);
+➡ Entrez **${labels[formStep]}** :`);
     } else {
         formMode=false;
         playSuccessSound();
@@ -260,7 +320,8 @@ function sendForm(){
 // ============================================
 function triggerMatrixRain(){
     wrapper.classList.add("matrix-mode");
-    setTimeout(()=>wrapper.classList.remove("matrix-mode"),3000);
+    // CHANGEMENT ICI: Durée réduite à 2000ms (2 secondes)
+    setTimeout(()=>wrapper.classList.remove("matrix-mode"),2000);
 }
 
 // ============================================
@@ -285,7 +346,13 @@ function executeCommand(cmd){
     else if(commands[base]) res=commands[base](args);
     else { playErrorSound(); res=`❌ Commande "${cmd}" inconnue.`; }
 
-    if(res) print(res);
+    if (res instanceof Promise) {
+        res.then(finalResult => {
+            if (finalResult) print(finalResult);
+        });
+    } else if (res) {
+        print(res);
+    }
 }
 
 // ============================================
