@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NIRD_OS v3.1 // GREEN KERNEL</title>
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <title>NIRD Terminal - Secure Resistance Shell</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,37 +14,51 @@
     <div class="screen-flicker"></div>
     <div id="disco-overlay" class="hidden"></div> 
 
-    <div class="terminal-wrapper" id="main-wrapper">
-        <div class="terminal-screen" id="terminal-screen">
-            <div id="boot-sequence"></div>
-            
-            <div id="main-interface" style="display:none;">
-                <div class="header-bar">
-                    <span>[ NIRD_OS v3.1.1 - GREEN KERNEL ]</span>
-                    <span style="color:var(--system-color)">NET: ENCRYPTED</span>
+    <div class="container" id="main-wrapper">
+        <div class="window" id="terminal-screen-wrapper">
+            <div class="window-header">
+                <div class="window-buttons">
+                    </div>
+                <div class="window-title">nird@SECURE-PROTOCOL: ~</div>
+            </div>
+
+            <div class="terminal-body" id="terminal-output">
+                <div class="output-line ascii-art">
+███╗&nbsp;&nbsp;&nbsp;██╗██╗██████╗&nbsp;██████╗ 
+████╗&nbsp;&nbsp;██║██║██╔══██╗██╔══██╗
+██╔██╗&nbsp;██║██║██████╔╝██║&nbsp;██║
+██║╚██╗██║██║██╔══██╗██║&nbsp;██║
+██║&nbsp;╚████║██║██║&nbsp;██║██████╔╝
+╚═╝&nbsp;╚═══╝╚═╝╚═╝&nbsp;╚═╝╚═════╝ 
                 </div>
-                
-                <div class="output-area" id="output"></div>
-                
-                <div class="input-area">
-                    <span class="prompt">agent@nird:~$</span>
-                    <input type="text" id="cmd-input" autocomplete="off" spellcheck="false">
-                    <span class="cursor">█</span>
+                <div class="output-line success">
+╔════════════════════════════════════════════════════════╗
+║&nbsp;ACCÈS NIRD SHELL V6.0 - PROTOCOLE DE RÉSISTANCE SECURE ║
+║&nbsp;Transmettez le Manifeste : Numérique Inclusif, Resp., Durable&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;║
+╚════════════════════════════════════════════════════════╝
                 </div>
+                <div class="output-line info">
+Tapez 'help' pour visualiser les PROTOCOLES DE MISSION disponibles.
+</div>
+            </div>
+
+            <div class="input-line">
+                <span class="input-prompt" id="input-prompt">nird@digital-detox:~$</span>
+                <input type="text" id="terminal-input" autofocus autocomplete="off">
             </div>
         </div>
     </div>
-
+    
     <div id="modal-success" class="modal hidden">
         <div class="modal-content">
             <h1 class="glitch" data-text="MISSION ACCOMPLIE">MISSION ACCOMPLIE</h1>
             <p>Le manifeste a été injecté dans le réseau.</p>
             <div class="progress-bar-final"><div class="fill"></div></div>
-            <p style="color:var(--system-color); font-size: 0.8em;">Déconnexion sécurisée en cours...</p>
+            <p style="color:var(--secondary-color); font-size: 0.8em;">Déconnexion sécurisée en cours...</p>
             <button onclick="location.reload()">[ TERMINER LA SESSION ]</button>
         </div>
     </div>
-
+    
     <script src="script.js"></script>
 </body>
 </html>

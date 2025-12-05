@@ -1,382 +1,440 @@
-// --- CONFIGURATION GLOBALE ---
-const terminal = {
-    input: document.getElementById('cmd-input'),
-    output: document.getElementById('output'),
-    boot: document.getElementById('boot-sequence'),
-    interface: document.getElementById('main-interface'),
-    wrapper: document.getElementById('main-wrapper'),
-    discoOverlay: document.getElementById('disco-overlay'), 
-    inForm: false,
-    formStep: 0,
-    formData: {},
-    sounds: { enabled: true, ctx: new (window.AudioContext || window.webkitAudioContext)() }
-};
+// ============================================
+// NIRD TERMINAL - V6.0 (Secure Transmission Protocol) - Version Fusionnée
+// ============================================
 
-// Configuration des étapes du formulaire (avec Interruption UX Décalée)
-const formConfig = [
-    { key: 'name', prompt: 'NOM DE CODE :', type: 'text' },
-    { key: 'interrupt', prompt: 'VÉRIFICATION SYSTÈME : Tapez "NIRD" pour continuer.', special: true }, // Interruption
-    { key: 'email', prompt: 'FRÉQUENCE DE CONTACT (Email) :', type: 'email' },
-    { key: 'subject', prompt: 'OBJET DE LA MISSION :', type: 'text' },
-    { key: 'message', prompt: 'CONTENU DU MANIFESTE :', type: 'textarea' }
-];
+// ============================================
+// VARIABLES GLOBALES & CONFIGURATION UX
+// ============================================
+const terminalInput = document.getElementById('terminal-input');
+const output = document.getElementById('terminal-output');
+const wrapper = document.getElementById('main-wrapper'); 
+const inputPrompt = document.getElementById('input-prompt'); 
+const modalSuccess = document.getElementById('modal-success'); 
+const modalContent = document.querySelector('#modal-success .modal-content');
+// La barre de progression dans la modale
+const finalProgressBarFill = document.querySelector('.progress-bar-final .fill');
 
-// --- EASTER EGGS : KONAMI CODE ---
-const konamiCode = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
-let konamiIndex = 0;
-let idleTimer; 
 
-// --- SYSTÈME AUDIO GÉNÉRATIF (inchangé) ---
-function playSound(type) {
-    if (!terminal.sounds.enabled || terminal.sounds.ctx.state === 'suspended') return;
-    const ctx = terminal.sounds.ctx;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+// Configuration Audio (Essentiel pour le son)
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const audioContext = new AudioContext();
+let soundEnabled = true;
+let volume = 0.5;
 
-    if (type === 'keystroke') {
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(600 + Math.random()*200, ctx.currentTime);
-        gain.gain.setValueAtTime(0.05, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.03);
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.start(); osc.stop(ctx.currentTime + 0.03);
-    } else if (type === 'boot') {
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(100, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 1.5);
-        gain.gain.setValueAtTime(0.1, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.5);
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.start(); osc.stop(ctx.currentTime + 1.5);
-    } else if (type === 'error') {
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(110, ctx.currentTime);
-        osc.frequency.setValueAtTime(130, ctx.currentTime + 0.1);
-        gain.gain.setValueAtTime(0.2, ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.4);
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.start(); osc.stop(ctx.currentTime + 0.4);
-        triggerShake(); 
-    } else if (type === 'success') {
-        let now = ctx.currentTime;
-        [440, 554, 659].forEach((freq, i) => {
-            let osc2 = ctx.createOscillator();
-            let gain2 = ctx.createGain();
-            osc2.type = 'sine';
-            osc2.frequency.value = freq;
-            gain2.gain.setValueAtTime(0.1, now + i*0.1);
-            gain2.gain.exponentialRampToValueAtTime(0.001, now + i*0.1 + 0.2);
-            osc2.connect(gain2); gain2.connect(ctx.destination);
-            osc2.start(now + i*0.1); osc2.stop(now + i*0.1 + 0.2);
-        });
-    }
+// Historique
+let commandHistory = [];
+let historyIndex = -1;
+
+// Formulaire
+let formMode = false;
+let formStep = 0;
+let formData = { name: '', email: '', subject: '', message: '' };
+const steps = ['name', 'email', 'subject', 'message'];
+const labels = ['NOM DE L\'OPÉRATEUR/ÉQUIPE', 'CONTACT MAIL CHIFFRÉ', 'OBJET DE LA MISSION', 'CONTENU DU MANIFESTE'];
+
+// Easter Eggs
+const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+let konamiProgress = 0;
+const BUFFER_LIMIT = 50; // Seuil de caractères pour le Buffer Overflow
+
+// Fonction utilitaire pour le délai
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+// ============================================
+// FONCTIONS AUDIO & VISUELLES (Animations)
+// ============================================
+function playSound(freq, type, duration, gainValue) {
+    if (!soundEnabled || audioContext.state === 'suspended') return;
+    
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = freq;
+    oscillator.type = type;
+    
+    gainNode.gain.setValueAtTime(volume * gainValue, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + duration);
 }
 
-// Fonction pour faire trembler l'écran (inchangée)
+function playKeySound() {
+    playSound(700 + Math.random() * 300, 'square', 0.03, 0.15); 
+}
+
+function playSubmitSound() {
+    playSound(450, 'sawtooth', 0.1, 0.5); 
+}
+
+function playErrorSound() {
+    playSound(150, 'square', 0.1, 0.8);
+    triggerShake(); // Ajout de l'effet de secousse
+}
+
+function playSuccessSound() {
+    [800, 950, 1100].forEach((f, i) => {
+        setTimeout(() => playSound(f, 'sawtooth', 0.05, 0.3), i * 50);
+    });
+}
+
+// 💥 Déclenche l'animation de secousse (shake-screen)
 function triggerShake() {
-    terminal.wrapper.classList.remove('shake-screen');
-    void terminal.wrapper.offsetWidth;
-    terminal.wrapper.classList.add('shake-screen');
-}
-
-// --- SÉQUENCE DE DÉMARRAGE (BOOT - inchangée) ---
-async function startBoot() {
-    document.body.addEventListener('click', () => {
-        if(terminal.sounds.ctx.state === 'suspended') terminal.sounds.ctx.resume();
-        terminal.input.focus();
-    }, {once:true});
-
-    printBootLine("NIRD BIOS (c) 2025 The Resistance Frontend Collective");
-    printBootLine("Initializing hardware...");
-    await sleep(500);
-    
-    printBootLine("CHECKING SYSTEM MEMORY...", "system");
-    let memDiv = document.createElement('div');
-    memDiv.className = 'line success';
-    terminal.boot.appendChild(memDiv);
-    for(let i=0; i<=128; i+=8) {
-         memDiv.textContent = `> ${i.toString().padStart(3, '0')} MB RAM OK`;
-         playSound('keystroke');
-         await sleep(30);
+    if (wrapper) { 
+        wrapper.classList.remove('shake-screen');
+        void wrapper.offsetWidth; // Force le reflow
+        wrapper.classList.add('shake-screen');
     }
-    
-    printBootLine("Loading Kernel modules...", "system");
-    await sleep(400);
-    printBootLine("[ OK ] mount /dev/resistance_fs");
-    await sleep(300);
-    printBootLine("Establishing secure tunnel to Village Numérique...", "system");
-    
-    let loadDiv = document.createElement('div');
-    loadDiv.className = 'line';
-    terminal.boot.appendChild(loadDiv);
-    for(let i=0; i<5; i++) {
-        loadDiv.textContent = "CONNECTING " + ".".repeat(i%4);
-        await sleep(400);
-    }
-    loadDiv.remove();
-
-    printBootLine("CONNECTION ESTABLISHED.", "success");
-    await sleep(800);
-    
-    terminal.boot.style.display = 'none';
-    terminal.interface.style.display = 'block';
-    playSound('boot');
-    printLine("BIENVENUE DANS LE TERMINAL DE RÉSISTANCE.", "success");
-    printLine("Tapez 'help' pour voir les protocoles disponibles.", "system");
-    terminal.input.focus();
 }
 
-// --- UTILITAIRES D'AFFICHAGE (inchangés) ---
-function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+// ============================================
+// FICHIERS SIMULÉS (Messages Thématiques)
+// ============================================
+const files = {
+    'PROTOCOLE_README.nrd': `╔══════════════════════════════════════════╗
+║ NIRD PROJECT - PROTOCOLE DE MISSION ║
+╚══════════════════════════════════════════╝
+Projet NIRD : Détoxification et souveraineté numérique.
+Votre rôle est d'acheminer le Manifeste chiffré.
+Tapez 'contact' pour initier la séquence de transmission.`,
+    'manifeste_nird.txt': `🌍 PILIER INCLUSIF: Un web libre et accessible à tous.
+🌱 PILIER RESPONSABLE: Souveraineté des données et Open Source.
+♻️ PILIER DURABLE: Sobriété et réduction de l'empreinte carbone.
+Résistance numérique en cours.`,
+    'GOLIATH_VAINCU.sh': `#!/bin/bash
+echo "Analyse des vulnérabilités de Goliath réussie."
+echo "Système en cours de décentralisation."
+exit 0`,
+    'secrets_gafam.dat': `🔒 FICHIER CHIFRÉ - NIVEAU 5 🔒
+[!] ACCÈS REFUSÉ. Autorisation ROOT requise.`,
+};
 
-function printBootLine(text, type = '') {
-    const div = document.createElement('div');
-    div.className = `line ${type}`;
-    div.textContent = text;
-    terminal.boot.appendChild(div);
-    terminal.wrapper.scrollTop = terminal.wrapper.scrollHeight;
-}
-
-function printLine(text, type = '') {
-    const div = document.createElement('div');
-    div.className = `line ${type}`;
-    div.innerHTML = text.replace(/\n/g, '<br>').replace(/ /g, '&nbsp;'); 
-    terminal.output.appendChild(div);
-    const screen = document.getElementById('terminal-screen');
-    screen.scrollTop = screen.scrollHeight;
-}
-
-// --- SYSTÈME DE COMMANDES (Nouveaux Easter Eggs réalistes) ---
+// ============================================
+// COMMANDES (Logique conservée)
+// ============================================
 const commands = {
-    'help': () => {
-        printLine("--- PROTOCOLES DISPONIBLES ---", "system");
-        printLine("  contact     : > Lancer le formulaire de transmission");
-        printLine("  clear       : > Nettoyer l'écran du terminal");
-        printLine("  about       : > Infos sur la démarche NIRD");
-        printLine("  date        : > Afficher l'heure système");
-        printLine("  **hack** : > Tester vos capacités de bypass ! (Fun)", "success");
-        printLine("  **sudo** : > Tenter d'obtenir des privilèges (réf. UNIX)", "success"); // Nouveau
-        printLine("  **apt update**:> Mettre à jour les dépendances (réf. Linux)", "success"); // Nouveau
-    },
-    'clear': () => {
-        terminal.output.innerHTML = '';
-        playSound('success');
-    },
-    'about': () => {
-        printLine("NIRD: Numérique Inclusif, Responsable, Durable.");
-        printLine("Objectif: Fournir des armes open-source aux établissements scolaires contre les GAFAM.");
-    },
-    'date': () => {
-       printLine(new Date().toUTCString(), "system");
-    },
-    'rm -rf /': async () => {
-        playSound('error');
-        printLine("ALERTE : TENTATIVE DE SABOTAGE DÉTECTÉE.", "error");
-        await sleep(1000);
-        printLine("...juste une blague. Ne refaites jamais ça.", "success");
-        terminal.input.disabled = false;
-        terminal.input.focus();
-    },
-    'contact': () => {
-        startForm();
-    },
-    
-    // 🥚 EGG 1: SUDO (Réponse classique mais décalée)
-    'sudo': () => {
-        printLine("usage: sudo [-H] [-L] [-P] [-b] [-E] [-i] [-k] [-n] [-r role] [-t type] [-v]", "error");
-        printLine("Désolé. Seul l'Administrateur peut devenir root. Mot de passe incorrect.", "error");
-    },
-    
-    // 🥚 EGG 2: APT UPDATE (Simulation de mise à jour)
-    'apt update': async () => {
-        printLine("Hit:1 http://nird-mirror.org/repo green-kernel InRelease", "system");
-        printLine("Get:2 http://nird-mirror.org/packages critical-patch [42.1 kB]", "system");
-        await sleep(500);
-        printLine("Get:3 http://nird-mirror.org/packages goliath-bypass [1200 kB]", "system");
-        await sleep(1000);
-        printLine("Fetched 1242 kB in 2s (621 kB/s)", "success");
-        printLine("Lecture des listes de paquets... Fait.", "success");
+    help: () => {
+        playSuccessSound();
+        return `╔══════════════════════════════════════════╗
+║         PROTOCOLES DE RÉSISTANCE          ║
+╚══════════════════════════════════════════╝
+📝 contact      -> Démarrer la transmission Manifeste
+📤 send         -> Valider l'envoi chiffré
+📂 ls           -> Lister les ressources locales
+📄 cat <fichier> -> Afficher le contenu de la ressource
+💻 sysinfo      -> État du système NIRD Core
+📜 log          -> Journal des commandes
+💡 mantra       -> Mantra de résistance
+🧹 clear        -> Nettoyer l'écran du protocole`;
     },
 
-    // 🥚 EGG 3: IPCONFIG/IFCONFIG (Simulation d'infos réseau)
-    'ipconfig': () => {
-         printLine("eth0: flags=2051<UP,BROADCAST,RUNNING,MULTICAST> mtu 1500", "system");
-         printLine("        inet 192.168.42.1 netmask 255.255.255.0 broadcast 192.168.42.255", "system");
-         printLine("        inet6 fe80::d8ee:42ff:f8e4:273/64 scopeid 0x20<link>", "system");
-         printLine("        ether d2:ee:42:e4:02:73 txqueuelen 1000 (Ethernet)", "system");
-         printLine("lo: flags=73<UP,LOOPBACK,RUNNING> mtu 65536", "system");
-         printLine("        inet 127.0.0.1 netmask 255.0.0.0", "system");
+    ls: () => {
+        playKeySound();
+        return Object.keys(files).map(f => '📄 '+f).join('\n');
     },
-    
-    'hack': async () => {
-        printLine("--- INITIATION DU BYPASS DE GOLIATH_FW ---", "system");
-        let hackDiv = document.createElement('div');
-        hackDiv.className = 'line hacking-text';
-        terminal.output.appendChild(hackDiv);
-        
-        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
-        
-        for(let i=0; i<30; i++) {
-            let line = "0x" + Math.floor(Math.random()*0xFFFFFFFF).toString(16) + " ";
-            for(let j=0; j<40; j++) {
-                line += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            hackDiv.textContent = line;
-            playSound('keystroke');
-            await sleep(20);
+    cat: (filename) => {
+        const fileContent = files[filename];
+        if (fileContent) {
+            playKeySound();
+            return fileContent;
         }
-        
-        printLine("[ BYPASS TERMINÉ ] Accès refusé par le pare-feu...", "error");
-        hackDiv.remove();
+        playErrorSound();
+        return `❌ ERREUR: Fichier "${filename}" introuvable. Ressource non localisée.`;
     },
-    
-    'cat': () => {
-        printLine(`
- /\\_/\\
-( o.o )
- > ^ < 
-        `, "system");
-        printLine("cat: Erreur de lecture. Le fichier est probablement un chat. Opération annulée.", "error");
+    pwd: () => {
+        playKeySound();
+        return '/resistance/protocole/transmission_secure';
+    },
+    whoami: () => {
+        playKeySound();
+        return '👤 Opérateur NIRD - Niveau 1 (Résistant)';
+    },
+    clear: () => {
+        playKeySound();
+        output.innerHTML = '';
+        return '';
+    },
+    history: () => {
+        playKeySound();
+        return commandHistory.length ? commandHistory.map((c, i) => `${i + 1}: ${c}`).join('\n') : 'Journal de commandes vide.';
+    },
+    contact: () => {
+        startForm();
+        return '';
+    },
+    send: () => {
+        sendForm();
+        return '';
+    },
+    neofetch: () => commands.sysinfo(), // Alias thématique
+    sysinfo: () => {
+        playKeySound();
+        return `
+                            [ CORE NIRD STATUS ]
+                            ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                            OS: NIRD Core v6.0 (Open Source)
+                            Shell: BASH (Mode Chiffré)
+                            Réseau: Décentralisé / Tor
+                            Intégrité: OK (100% Non-GAFAM)
+`;
+    },
+    cowsay: (msg) => {
+        playKeySound();
+        return `< ${msg || "La sobriété est la force."} >\n \\   ^__^\n  \\  (oo)\\_______\n     (__)\\       )\\/\\\n         ||----w |\n         ||     ||`;
+    },
+    fortune: () => commands.mantra(), // Alias thématique
+    mantra: () => {
+        playKeySound();
+        const f = [
+            "💡 MANTRA: Moins de code, plus d'éthique.",
+            "🌍 MANTRA: L'inclusion numérique est la première des résistances.",
+            "♻️ MANTRA: L'obsolescence n'est qu'une illusion de Goliath.",
+            "🎯 MANTRA: Nous sommes les astérix du numérique."
+        ];
+        return f[Math.floor(Math.random() * f.length)];
+    },
+    matrix: () => {
+        return '🟢 PROTOCOLE MATRIX ENGAGÉ ! (Simulation visuelle active)';
+    },
+    shutdown: () => {
+        playErrorSound();
+        print('🚨 ALERTE CRITIQUE: Déconnexion non sécurisée. Procédure d\'effacement des données...', 'error');
+        wrapper.classList.add('panic-mode');
+        terminalInput.disabled = true;
+        
+        // Simule l'affichage de la modale de succès pour la séquence de fermeture dramatique
+        modalSuccess.classList.remove('hidden');
+        modalContent.querySelector('h1').textContent = 'SHUTDOWN CRITIQUE';
+        modalContent.querySelector('p').textContent = 'EFFACEMENT DES DONNÉES EN COURS.';
+        if (finalProgressBarFill) finalProgressBarFill.style.width = '100%';
+        
+        setTimeout(() => {
+             location.reload(); 
+        }, 5000); 
+        return 'FERMETURE DU SYSTÈME NIRD...';
     }
 };
 
-// --- LOGIQUE DU FORMULAIRE (inchangée) ---
-function startForm() {
-    terminal.inForm = true;
-    terminal.formStep = 0;
-    terminal.formData = {};
-    playSound('success');
-    printLine("--- INITIALISATION DU PROTOCOLE DE CONTACT ---", "success");
-    printLine(formConfig[0].prompt, "system");
-    document.querySelector('.prompt').textContent = "INPUT>";
-}
+// ============================================
+// AFFICHAGE AVANCÉ (Typing effect)
+// ============================================
+function print(text, className = '') {
+    const div = document.createElement('div');
+    div.className = 'output-line ' + className;
+    output.appendChild(div);
 
-async function handleFormInput(value) {
-    if(value === '') return; 
-
-    const currentField = formConfig[terminal.formStep];
-    
-    if (currentField.special && currentField.key === 'interrupt') {
-        printLine(value, "user");
-        if (value.toUpperCase() === 'NIRD') {
-            printLine("Vérification réussie. Protocole de transmission réactivé.", "success");
-            terminal.formStep++;
+    let i = 0;
+    const interval = setInterval(() => {
+        if (i < text.length) {
+            // Utiliser innerHTML pour permettre les tags (ex: **send**)
+            // NOTE: L'affichage caractère par caractère ne gère pas bien les balises HTML ou Markdown.
+            // On affiche le texte brut puis on le formate à la fin.
+            div.textContent += text[i];
+            if (Math.random() < 0.2) playKeySound();
+            i++;
         } else {
-            printLine("ERREUR CRITIQUE. Vous n'êtes pas un initié. Recommencez.", "error");
-            triggerShake();
-            terminal.formStep--; 
+            clearInterval(interval);
+            // Remplacement final des ** par <b>
+            div.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>'); 
         }
-        await sleep(500);
-    } else {
-        terminal.formData[currentField.key] = value;
-        terminal.formStep++;
-        printLine(value, "user");
-        playSound('success');
-        await sleep(200);
-    }
+        output.scrollTop = output.scrollHeight;
+    }, 15);
+}
 
-    if (terminal.formStep < formConfig.length) {
-        printLine(formConfig[terminal.formStep].prompt, "system");
+// Nouvelle fonction printLine (sans effet de frappe, pour la barre de progression)
+function printLine(text, className = '') {
+    const div = document.createElement('div');
+    div.className = 'output-line ' + className;
+    div.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+    output.appendChild(div);
+    output.scrollTop = output.scrollHeight;
+    return div;
+}
+
+// ============================================
+// FORMULAIRE (Transmission Manifeste)
+// ============================================
+function startForm() {
+    playSuccessSound();
+    formMode = true;
+    formStep = 0;
+    formData = { name: '', email: '', subject: '', message: '' };
+    print('📝 PROTOCOLE DE TRANSMISSION DÉMARRÉ. Veuillez entrer le **NOM DE L\'OPÉRATEUR/ÉQUIPE** :', 'info');
+    inputPrompt.textContent = "INPUT>"; 
+}
+
+function handleForm(input) {
+    if (input.toLowerCase() === 'send') {
+         sendForm(); 
+         return;
+    }
+    
+    printLine(`INPUT> ${input}`, 'command');
+
+    formData[steps[formStep]] = input;
+    formStep++;
+
+    if (formStep < steps.length) {
+        print(`✅ ${labels[formStep - 1]} : ENREGISTRÉ. Veuillez entrer le **${labels[formStep]}** :`, 'success');
     } else {
-        terminal.inForm = false;
-        document.querySelector('.prompt').textContent = "agent@nird:~$";
-        submitForm();
+        formMode = false;
+        playSuccessSound();
+        inputPrompt.textContent = "nird@digital-detox:~$";
+        print("✅ TOUS LES PARAMÈTRES ENREGISTRÉS. Manifeste prêt pour le chiffrement.", 'success glow');
+        print("Tapez **send** pour initier la séquence de transmission sécurisée.", 'info');
     }
 }
 
+// Fonction de soumission asynchrone pour l'animation détaillée
 async function submitForm() {
-    playSound('boot');
-    printLine("Validation des données... OK", "system");
+    playSubmitSound();
+    printLine("Validation des données... OK", "info");
     await sleep(500);
-    printLine("Chiffrement du paquet (AES-256)...", "system");
+    printLine("Chiffrement du paquet (AES-256)...", "info");
     await sleep(800);
     
-    let barDiv = document.createElement('div');
-    barDiv.className = 'line success';
-    terminal.output.appendChild(barDiv);
+    let barDiv = printLine("TRANSMISSION: [░░░░░░░░░░░░░░░░░░░░░░░░░] 0%", "success");
     const width = 25;
     for(let i=0; i<=width; i++) {
         let filled = "█".repeat(i);
         let empty = "░".repeat(width-i);
         barDiv.textContent = `TRANSMISSION: [${filled}${empty}] ${Math.round((i/width)*100)}%`;
-        playSound('keystroke');
+        playSound(700, 'sine', 0.01, 0.05); // Son de progression plus subtil
         await sleep(50);
     }
     
-    printLine("Paquet envoyé. En attente d'accusé de réception...", "system");
+    printLine("Paquet envoyé. En attente d'accusé de réception...", "info");
     await sleep(1500);
     
-    playSound('success');
-    document.getElementById('modal-success').classList.remove('hidden');
+    // Remplacement du ancien code ASCII art par le nouveau modal
+    playSuccessSound();
+    modalSuccess.classList.remove('hidden');
+
+    // Assurez-vous que l'animation CSS de la barre de progression se réinitialise
+    // en la masquant puis la réaffichant si besoin. Ici, l'animation se lance
+    // via la classe CSS, pas besoin de la gérer en JS.
 }
 
-// --- GESTIONNAIRE D'ÉVÉNEMENTS CLAVIER (avec Timer d'ennui technique) ---
-
-function resetIdleTimer() {
-    clearTimeout(idleTimer);
-    idleTimer = setTimeout(() => {
-        if (!terminal.inForm && terminal.interface.style.display !== 'none') {
-            // Message d'ennui plus technique
-            printLine("ALERT: Console input idle for 15s. Process suspension imminent. Type 'activity' or face timeout.", "error");
-            playSound('error');
-        }
-    }, 15000);
-}
-
-terminal.input.addEventListener('keydown', function(e) {
-    resetIdleTimer();
-    
-    // --- KONAMI CODE TRACKER ---
-    const isDiscoActive = document.body.classList.contains('disco-mode');
-
-    if(e.key === konamiCode[konamiIndex]) {
-        konamiIndex++;
-        if(konamiIndex === konamiCode.length) {
-            if (!isDiscoActive) {
-                document.body.classList.add('disco-mode');
-                terminal.discoOverlay.classList.remove('hidden');
-                printLine("🕺 KERNEL MODE: DISCO ACTIVÉ. ATTENTION AUX EFFETS STROBOSCOPIQUES. 🕺", "success");
-            } else {
-                document.body.classList.remove('disco-mode');
-                terminal.discoOverlay.classList.add('hidden');
-                printLine("MODE DISCO DÉSACTIVÉ. Revert to secure mode.", "system");
-            }
-            konamiIndex = 0;
-        }
-    } else if (e.key.length !== 1 && konamiIndex > 0) {
-        // Ignorer les touches fonctionnelles
-    } else {
-        konamiIndex = 0;
+function sendForm() {
+    if (formMode) {
+        return; 
     }
 
-    // Touche Entrée
-    if (e.key === 'Enter') {
-        const value = this.value; 
-        this.value = ''; 
-        
-        if (terminal.inForm) {
-            handleFormInput(value);
-        } else {
-            const trimmedValue = value.trim();
-            if (trimmedValue !== '') {
-                 printLine(`agent@nird:~$ ${trimmedValue}`, "user");
-                 if (commands[trimmedValue]) {
-                     commands[trimmedValue]();
-                 } else {
-                     printLine(`Erreur: Commande '${trimmedValue}' inconnue. Type 'help'.`, "error");
-                     playSound('error');
-                 }
-            }
+    if (!formData.name || !formData.email || !formData.subject || !formData.message) {
+        playErrorSound();
+        print('❌ ÉCHEC DE LA TRANSMISSION: Formulaire incomplet. Exécutez "contact" pour remplir les paramètres.', 'error');
+        return;
+    }
+    
+    // Déclenchement de la nouvelle séquence de soumission
+    printLine('===========================================================', 'info');
+    printLine('>>> INITIATION DU PROTOCOLE [MANIFESTE_NIRD_V3] <<<', 'info');
+    printLine('===========================================================', 'info');
+    
+    submitForm();
+}
+
+
+// ============================================
+// EXECUTION COMMANDES & GESTION DES TOUCHES
+// ============================================
+function executeCommand(cmd) {
+    if (!cmd) return;
+    
+    // On utilise printLine pour l'input, pas d'effet de frappe ici
+    printLine(`nird@digital-detox:~$ ${cmd}`, 'command');
+    
+    commandHistory.push(cmd);
+    historyIndex = -1;
+
+    if (formMode) {
+        handleForm(cmd);
+        return;
+    }
+
+    const parts = cmd.split(' ');
+    const baseCmd = parts[0].toLowerCase();
+    const args = parts.slice(1).join(' ');
+
+    let result = null;
+
+    if (commands[cmd.toLowerCase()]) {
+        result = commands[cmd.toLowerCase()]();
+    } else if (commands[baseCmd]) {
+        result = commands[baseCmd](args);
+    } else {
+        playErrorSound();
+        result = `❌ ERREUR: Commande "${cmd}" non reconnue. Consultez les 'help'.`;
+    }
+    
+    if (result !== '' && result !== null) {
+        print(result);
+    }
+}
+
+terminalInput.addEventListener('keydown', e => {
+    
+    // 💥 Logique du Buffer Overflow visuel
+    const isBufferFull = (e.target.value.length >= BUFFER_LIMIT && e.key.length === 1);
+    
+    if (isBufferFull) {
+        wrapper.classList.add('overflow-glitch'); 
+        e.target.classList.add('overflow-alert');
+        if (e.key === 'Enter') { 
+            wrapper.classList.remove('overflow-glitch');
+            e.target.classList.remove('overflow-alert');
         }
-    } 
-    // Sons de frappe
-    else if (e.key.length === 1) {
-        playSound('keystroke');
+    } else {
+        wrapper.classList.remove('overflow-glitch');
+        e.target.classList.remove('overflow-alert');
+    }
+    
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        executeCommand(e.target.value.trim());
+        e.target.value = '';
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (commandHistory.length > 0) {
+            historyIndex = Math.min(historyIndex + 1, commandHistory.length - 1);
+            terminalInput.value = commandHistory[commandHistory.length - 1 - historyIndex];
+        }
+    } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        historyIndex = Math.max(historyIndex - 1, -1);
+        terminalInput.value = historyIndex === -1 ? '' : commandHistory[commandHistory.length - 1 - historyIndex];
+    }
+    
+    // Konami Code
+    if (e.key === konamiCode[konamiProgress]) {
+        konamiProgress++;
+        if (konamiProgress === konamiCode.length) {
+            konamiProgress = 0;
+            playSuccessSound();
+            print('🎮 PROTOCOLE KONAMI CODE ENGAGÉ ! Déblocage de l\'accès ROOT !', 'success glow');
+        }
+    } else if (e.key.length === 1) {
+        // Play sound only for character keys
+        playKeySound();
+        konamiProgress = 0;
+    } else if (e.key !== 'Shift' && e.key !== 'Control' && e.key !== 'Alt' && !e.key.startsWith('Arrow')) {
+        konamiProgress = 0;
     }
 });
 
-// Lancement au chargement de la page
+// ============================================
+// INIT
+// ============================================
+document.addEventListener('click', () => {
+    if (audioContext.state === 'suspended') {
+        audioContext.resume();
+    }
+    terminalInput.focus();
+}, { once: true }); 
+
 window.onload = () => {
-    startBoot();
-    resetIdleTimer();
+    terminalInput.focus();
 }
