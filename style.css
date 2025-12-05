@@ -230,7 +230,7 @@ body {
     to { opacity: 0.8; }
 }
 
-/* --- MODAL DE SUCCÈS (Faux Faux-Pas) --- */
+/* --- MODAL DE SUCCÈS (Mise à jour) --- */
 .modal {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.98); 
@@ -245,11 +245,27 @@ body {
     box-shadow: 0 0 70px var(--primary-color), inset 0 0 30px var(--secondary-color);
     max-width: 650px; width: 85%;
 }
-#countdown-display {
-    font-size: 4em; font-weight: bold; position: relative;
+.modal-content h1 {
+    font-size: 3em; /* Légèrement réduit pour l'espace */
+    font-weight: bold; position: relative;
     color: var(--primary-color);
     text-shadow: 4px 4px 0px #33ffcc, -4px -4px 0px var(--error-color);
     animation: glitch-modal 0.3s infinite linear alternate-reverse; 
+    margin-bottom: 20px;
+}
+.modal-content button {
+    background: var(--primary-color);
+    color: var(--bg-deep);
+    border: none;
+    padding: 10px 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.2s;
+}
+.modal-content button:hover {
+    box-shadow: 0 0 15px var(--primary-color);
 }
 
 @keyframes glitch-modal {
@@ -260,4 +276,24 @@ body {
     60% { transform: translate(3px, -3px); clip-path: polygon(0 60%, 100% 60%, 100% 100%, 0 100%); }
     75% { transform: translate(-4px, 4px); }
     100% { transform: translate(0); }
+}
+
+/* 💥 NOUVEAU: Barre de progression finale */
+.progress-bar-final {
+    width: 80%;
+    height: 15px;
+    background: #111;
+    border: 1px solid var(--primary-color);
+    margin: 10px auto 10px auto;
+    overflow: hidden;
+}
+.progress-bar-final .fill {
+    height: 100%;
+    width: 0%;
+    background: var(--success-color);
+    box-shadow: 0 0 8px var(--success-color);
+    animation: final-fill 4s forwards; /* Animation déclenchée à l'affichage */
+}
+@keyframes final-fill {
+    to { width: 100%; }
 }
