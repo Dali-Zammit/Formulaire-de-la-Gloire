@@ -20,12 +20,11 @@ let formStep = 0;
 let formData = { name: '', email: '', subject: '', message: '' };
 const steps = ['name', 'email', 'subject', 'message'];
 const labels = [
-    "NOM DE L'ÉQUIPE", 
-    "CONTACT MAIL",
+    "NOM DE L'OPÉRATEUR/ÉQUIPE", 
+    "CONTACT MAIL CHIFFRÉ",
     "OBJET DE LA MISSION",
     "CONTENU DU MANIFESTE"
 ];
-
 
 const konamiCode = [
     'ArrowUp','ArrowUp','ArrowDown','ArrowDown',
@@ -36,6 +35,14 @@ let konamiProgress = 0;
 const BUFFER_LIMIT = 50;
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
+
+function resumeAudioContext() {
+    if (audioContext.state === 'suspended') {
+        audioContext.resume().then(() => {
+            console.log('AudioContext repris après la première interaction.');
+        });
+    }
+}
 
 function playSound(freq, type, duration, gainValue){
     if(!soundEnabled || audioContext.state === "suspended") return;
@@ -174,11 +181,11 @@ Intégrité: 100% Anti-GAFAM`;
         triggerMatrixRain();
         playSuccessSound();
 
-        // Raccourci le délai total
+        
         await sleep(1000); 
         line1.innerHTML = "✔ Mode MATRICE initialisé. Connexion au flux **DATA_STREAM**...";
         
-        await sleep(500); // Raccourci le délai final
+        await sleep(500); 
         return "🔵 **CYBER-MATRIX ACTIF**"; 
     },
 
@@ -195,9 +202,7 @@ Intégrité: 100% Anti-GAFAM`;
     }
 };
 
-// ============================================
-// PRINT ENGINE
-// ============================================
+
 function print(text, cls=""){
     const div = document.createElement("div");
     div.className="output-line "+cls;
@@ -226,15 +231,13 @@ function printLine(text,cls=""){
     return div;
 }
 
-// ============================================
-// FORMULAIRE CONTACT
-// ============================================
+
 function startForm(){
     playSuccessSound();
     formMode=true;
     formStep=0;
     formData={name:"",email:"",subject:"",message:""};
-    print("📝 Entrez **NOM DE L'ÉQUIPE**");
+    print("📝 Entrez **NOM DE L'OPÉRATEUR/ÉQUIPE**");
     inputPrompt.textContent="INPUT>";
 }
 
@@ -257,7 +260,7 @@ function handleForm(input){
 
     if(formStep<steps.length){
         print(`✔ ${labels[formStep-1]} enregistré.
-➡ Entrez **${labels[formStep]}** :`);
+➡ Entrer **${labels[formStep]}** :`);
     } else {
         formMode=false;
         playSuccessSound();
@@ -305,7 +308,6 @@ function sendForm(){
 
 function triggerMatrixRain(){
     wrapper.classList.add("matrix-mode");
-    // CHANGEMENT ICI: Durée réduite à 2000ms (2 secondes)
     setTimeout(()=>wrapper.classList.remove("matrix-mode"),2000);
 }
 
@@ -340,6 +342,9 @@ function executeCommand(cmd){
 
 terminalInput.addEventListener("keydown",e=>{
     
+    resumeAudioContext(); 
+    
+
     if(e.target.value.length>=BUFFER_LIMIT && e.key.length===1){
         wrapper.classList.add("overflow-glitch");
         terminalInput.classList.add("overflow-alert");
@@ -347,6 +352,7 @@ terminalInput.addEventListener("keydown",e=>{
         wrapper.classList.remove("overflow-glitch");
         terminalInput.classList.remove("overflow-alert");
     }
+
 
     if(e.key===konamiCode[konamiProgress]){
         konamiProgress++;
@@ -358,12 +364,14 @@ terminalInput.addEventListener("keydown",e=>{
         }
     } else konamiProgress=0;
 
+
     if(e.key==="Enter"){
         e.preventDefault();
         executeCommand(e.target.value.trim());
         e.target.value="";
     }
 
+   
     if(e.key==="ArrowUp"){
         e.preventDefault();
         if(commandHistory.length>0){
@@ -372,6 +380,7 @@ terminalInput.addEventListener("keydown",e=>{
         }
     }
 
+    
     if(e.key==="ArrowDown"){
         e.preventDefault();
         if(historyIndex>0){
@@ -383,5 +392,6 @@ terminalInput.addEventListener("keydown",e=>{
         }
     }
 
+    
     if(e.key.length===1) playKeySound();
 });
