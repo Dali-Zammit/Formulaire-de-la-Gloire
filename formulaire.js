@@ -1,10 +1,3 @@
-// ============================================
-// NIRD TERMINAL - V6.0 (Secure Transmission Protocol)
-// ============================================
-
-// ============================================
-// VARIABLES GLOBALES
-// ============================================
 const terminalInput = document.getElementById('terminal-input');
 const output = document.getElementById('terminal-output');
 const wrapper = document.getElementById('main-wrapper'); 
@@ -21,7 +14,7 @@ let volume = 0.5;
 let commandHistory = [];
 let historyIndex = -1;
 
-// Formulaire
+
 let formMode = false;
 let formStep = 0;
 let formData = { name: '', email: '', subject: '', message: '' };
@@ -33,7 +26,7 @@ const labels = [
     "CONTENU DU MANIFESTE"
 ];
 
-// Easter Eggs
+
 const konamiCode = [
     'ArrowUp','ArrowUp','ArrowDown','ArrowDown',
     'ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'
@@ -43,9 +36,7 @@ let konamiProgress = 0;
 const BUFFER_LIMIT = 50;
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-// ============================================
-// AUDIO + ANIMATIONS
-// ============================================
+
 function playSound(freq, type, duration, gainValue){
     if(!soundEnabled || audioContext.state === "suspended") return;
     const osc = audioContext.createOscillator();
@@ -93,9 +84,7 @@ function triggerSynthFlash(){
 }
 
 
-// ============================================
-// FICHIERS SIMULES
-// ============================================
+
 const files = {
     "PROTOCOLE_README.nrd": `╔══════════════════════════════════════════╗
 ║ NIRD PROJECT - PROTOCOLE DE MISSION ║
@@ -109,9 +98,7 @@ echo "Décapage du système central... OK"`,
     "secrets_gafam.dat": `🔒 ACCÈS REFUSÉ 🔒`
 };
 
-// ============================================
-// COMMANDES
-// ============================================
+
 const commands = {
     help: () => {
         playSuccessSound();
@@ -315,18 +302,14 @@ function sendForm(){
     submitForm();
 }
 
-// ============================================
-// MATRIX EFFECT
-// ============================================
+
 function triggerMatrixRain(){
     wrapper.classList.add("matrix-mode");
     // CHANGEMENT ICI: Durée réduite à 2000ms (2 secondes)
     setTimeout(()=>wrapper.classList.remove("matrix-mode"),2000);
 }
 
-// ============================================
-// EXECUTION COMMANDES
-// ============================================
+
 function executeCommand(cmd){
     if(!cmd) return;
 
@@ -355,12 +338,8 @@ function executeCommand(cmd){
     }
 }
 
-// ============================================
-// KEYBOARD EVENTS + KONAMI + HISTORY
-// ============================================
 terminalInput.addEventListener("keydown",e=>{
     
-    // === Buffer overflow visual
     if(e.target.value.length>=BUFFER_LIMIT && e.key.length===1){
         wrapper.classList.add("overflow-glitch");
         terminalInput.classList.add("overflow-alert");
@@ -369,7 +348,6 @@ terminalInput.addEventListener("keydown",e=>{
         terminalInput.classList.remove("overflow-alert");
     }
 
-    // === Konami
     if(e.key===konamiCode[konamiProgress]){
         konamiProgress++;
         if(konamiProgress===konamiCode.length){
@@ -380,14 +358,12 @@ terminalInput.addEventListener("keydown",e=>{
         }
     } else konamiProgress=0;
 
-    // === ENTER
     if(e.key==="Enter"){
         e.preventDefault();
         executeCommand(e.target.value.trim());
         e.target.value="";
     }
 
-    // === HISTORY (UP)
     if(e.key==="ArrowUp"){
         e.preventDefault();
         if(commandHistory.length>0){
@@ -396,7 +372,6 @@ terminalInput.addEventListener("keydown",e=>{
         }
     }
 
-    // === HISTORY (DOWN)
     if(e.key==="ArrowDown"){
         e.preventDefault();
         if(historyIndex>0){
@@ -408,6 +383,5 @@ terminalInput.addEventListener("keydown",e=>{
         }
     }
 
-    // === SOUND
     if(e.key.length===1) playKeySound();
 });
