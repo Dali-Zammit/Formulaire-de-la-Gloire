@@ -89,22 +89,22 @@ echo "Décapage du système central... OK"`,
 // COMMANDES
 // ============================================
 const commands = {
-    help: () => {
-        playSuccessSound();
-        return `╔══════════════════════════════╗
-║  PROTOCOLES DISPONIBLES     ║
+help: () => {
+    playSuccessSound();
+    return `╔══════════════════════════════╗
+║  📜 PROTOCOLES DISPONIBLES   ║
 ╚══════════════════════════════╝
-contact -> démarrer transmission
-send    -> envoyer manifeste
-ls      -> lister fichiers
-cat f   -> afficher fichier
-history -> historique des commandes
-clear   -> nettoyer affichage
-sysinfo -> infos système
-mantra  -> citation de résistance
-matrix  -> cascade numérique
-shutdown -> extinction critique`;
-    },
+📌 contact -> démarrer transmission
+📦 send    -> envoyer manifeste
+📂 ls      -> lister fichiers
+📑 cat f   -> afficher fichier
+⏳ history -> historique commandes
+🧽 clear   -> nettoyer affichage
+⚙️ sysinfo -> infos système
+💬 mantra  -> citation de résistance
+🕶 matrix  -> cascade numérique
+💣 shutdown -> extinction critique`;
+},
 
     ls: () => Object.keys(files).map(f=>"📄 "+f).join("\n"),
     cat: fname => files[fname] ?? "❌ fichier introuvable",
